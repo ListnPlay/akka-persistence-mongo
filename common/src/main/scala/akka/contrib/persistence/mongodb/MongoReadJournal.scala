@@ -60,6 +60,12 @@ class ScalaDslMongoReadJournal(impl: MongoPersistenceReadJournallingApi)(implici
 
   import ScalaDslMongoReadJournal._
 
+  def realtimeEvents(): Source[EventEnvelope, _] = {
+    Source.actorRef[(Event, Offset)](100, OverflowStrategy.dropTail)
+      .mapMaterializedValue(impl.subscribeJournalEvents)
+      .toEventEnvelopes
+  }
+
   def currentAllEvents(): Source[EventEnvelope, NotUsed] = impl.currentAllEvents.toEventEnvelopes
 
   override def currentPersistenceIds(): Source[String, NotUsed] = impl.currentPersistenceIds
