@@ -5,7 +5,7 @@ import com.mongodb.client.{MongoCollection, MongoDatabase}
 import org.bson.Document
 
 trait ContainerMongo {
-  def host = sys.env.getOrElse("CONTAINER_HOST","localhost")
+  def host = sys.env.getOrElse("CONTAINER_HOST","192.168.99.100")
   def authPort = 28117
   def noAuthPort = 27117
   def envMongoVersion = Option(sys.env.getOrElse("MONGODB_VERSION","3.2"))

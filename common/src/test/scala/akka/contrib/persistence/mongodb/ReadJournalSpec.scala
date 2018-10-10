@@ -108,7 +108,7 @@ abstract class ReadJournalSpec[A <: MongoPersistenceExtension](extensionClass: C
 
       events map Append.apply foreach (ar ! _)
 
-      Await.result(promise.future, 3.seconds.dilated)
+      Await.result(promise.future, 6.seconds.dilated)
 
       val readJournal =
         PersistenceQuery(as).readJournalFor[ScalaDslMongoReadJournal](MongoReadJournal.Identifier)
