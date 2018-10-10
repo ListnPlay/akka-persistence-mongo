@@ -78,13 +78,14 @@ class RxMongoDriver(system: ActorSystem, config: Config, driverProvider: RxMongo
     }
 
   private[this] def waitForAuthentication(conn: MongoConnection, auth: Authenticate): MongoConnection = {
-    wait(conn.authenticate(auth.db, auth.user, auth.password))
+    import driver.system.dispatcher
+    wait(conn.authenticate(auth.db, auth.user, auth.password.getOrElse(""), failoverStrategy))
     conn
   }
   private[this] def wait[T](awaitable: Awaitable[T])(implicit duration: Duration): T =
     Await.result(awaitable, duration)
 
-  def walk(collection: Future[BSONCollection])(previous: Seq[WriteResult], doc: BSONDocument)(implicit ec: ExecutionContext): Future[Seq[WriteResult]] = {
+  def walk(collection: Future[BSONCollection])(previous: Seq[WriteResult], doc: BSONDocument)(implicit ec: ExecutionContext): Future[Cursor.State[Seq[WriteResult]]] = {
     import DefaultBSONHandlers._
     import Producer._
     import RxMongoSerializers._
@@ -103,7 +104,7 @@ class RxMongoDriver(system: ActorSystem, config: Config, driverProvider: RxMongo
       case Success(s) => logger.debug(s"update completed ... ${s.size - 1} so far")
       case Failure(t) => logger.error(s"update failure", t)
     }
-    results
+    results.map(Cursor.Cont(_))
   }
 
   override private[mongodb] def upgradeJournalIfNeeded(): Unit = upgradeJournalIfNeeded("")
@@ -126,8 +127,7 @@ class RxMongoDriver(system: ActorSystem, config: Config, driverProvider: RxMongo
       if (count > 0) {
         j.flatMap(_.find(q)
                     .cursor[BSONDocument]()
-                    .enumerate()
-                    .run(Iteratee.foldM(empty)(walker)))
+                    .foldWhileM(empty)(walker))
       } else Future.successful(empty)
     }
 
