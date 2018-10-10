@@ -64,7 +64,7 @@ class ScalaDslMongoReadJournal(impl: MongoPersistenceReadJournallingApi, config:
 
 
   def realtimeEvents(): Source[EventEnvelope, _] = {
-    ??? //TODO
+    impl.liveEvents.toEventEnvelopes
   }
 
   def currentAllEvents(): Source[EventEnvelope, NotUsed] = impl.currentAllEvents.toEventEnvelopes
