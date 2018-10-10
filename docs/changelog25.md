@@ -1,5 +1,24 @@
 ## Changelog for 2.x major version
 
+### 2.1.0
+* Change live queries to be directly connected to database (#202)
+
+### 2.0.12
+* Merge pull request #201 from scullxbones/wip-200
+* Fix for case when query is run before collections exist
+
+### 2.0.11
+* Fix for RXM tag query being too broad (#196)
+
+### 2.0.10
+* Merge pull request #192 from Fabszn/externalizedConfBuffer
+* Makes buffer size can be setting up from properties
+
+### 2.0.9
+* Merge pull request #189 from bmontuelle/master
+* Filter database system collections
+* Fix regex substitute error; upgrade to 0.13.10 due to `sbt-dependency-graph`
+
 ### 2.0.8
 * Merge pull request #187 from TiendaNube/fix-two-issues
 * Fix#1 - Filter out realtime collection name when using multiple collections. Fix#2 - Use the configuration to enable/disable the realtime cursor.

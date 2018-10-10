@@ -9,7 +9,7 @@
      * If using `docker-machine`, `export CONTAINER_HOST=$(docker-machine ip default)` should set the variable correctly for the machine named "default"
      * If using `dlite`, `export CONTAINER_HOST=docker.local` should set the variable correctly
  * Supports Akka 2.5 series
- * Test suite runs against MongoDB major versions 2.6, 3.0, 3.2, 3.4, 3.6
+ * Test suite runs against MongoDB major versions 3.0, 3.2, 3.4, 3.6
  * Cross-compiled against scala `2.11` and `2.12`
  * Be aware that there is a `16MB` payload size limit on snapshots and journal events.  In addition a journal batch must be <= `16MB` in size.  A journal batch is defined by the `Seq` of events passed to `persistAll`.
 
@@ -24,12 +24,12 @@
 
 (Casbah)
 ```scala
-libraryDependencies +="com.github.scullxbones" %% "akka-persistence-mongo-casbah" % "2.0.8"
+libraryDependencies +="com.github.scullxbones" %% "akka-persistence-mongo-casbah" % "2.1.0"
 ```
 (Reactive Mongo)
 ##### Please note: Supported versions of reactive mongo require the `0.12` series, with a minimum version number of `0.12.3` (for Akka 2.5 support)
 ```scala
-libraryDependencies +="com.github.scullxbones" %% "akka-persistence-mongo-rxmongo" % "2.0.8"
+libraryDependencies +="com.github.scullxbones" %% "akka-persistence-mongo-rxmongo" % "2.1.0"
 ```
 * Inside of your `application.conf` file, add the following line if you want to use the journal (snapshot is optional).  The casbah/rxmongo selection should be pulled in by a `reference.conf` in the driver jar you choose:
 ```
@@ -44,6 +44,7 @@ akka.persistence.snapshot-store.plugin = "akka-contrib-mongodb-persistence-snaps
    * [Collection and Index](#mongocollection)
    * [Write Concerns](#writeconcern)
    * [ReactiveMongo Failover](#rxmfailover)
+   * [Stream buffer size](#buffer-size)
    * [Dispatcher](#dispatcher)
    * [Pass-Through BSON](#passthru)
    * [Legacy Serialization](#legacyser)
@@ -156,6 +157,17 @@ akka.contrib.persistence.mongodb.rxmongo.failover {
 ```
 
 See [Reactive Mongo documentation](http://reactivemongo.org/releases/0.12/documentation/advanced-topics/failoverstrategy.html) for more information.
+
+<a name="buffer-size"/>
+##### Configuring size of buffer for read stream
+
+Akka persitence mongo uses streams to feed the read side with events. By default, the buffer's size is fixed at `1000
+To modify the default value for a specific use case, you can add the following configuration lines in your `application.conf`.
+  
+ akka.contrib.persistence.stream-buffer-max-size.stream-buffer-max-size.event-by-pid = [your value]
+ akka.contrib.persistence.stream-buffer-max-size.stream-buffer-max-size.all-events = [your value]
+ akka.contrib.persistence.stream-buffer-max-size.stream-buffer-max-size.events-by-tag = [your value]
+ akka.contrib.persistence.stream-buffer-max-size.stream-buffer-max-sizepid = [your value]
 
 <a name="dispatcher"/>
 ##### Configuring the dispatcher used
@@ -497,7 +509,7 @@ Of course, once this is done, you should **not** start your application, unless 
 ###### Configuration
 Add the following to your `build.sbt` file:
 ```scala
-libraryDependencies ++= Seq( "com.github.scullxbones" %% "akka-persistence-mongo-tools" % "2.0.8",
+libraryDependencies ++= Seq( "com.github.scullxbones" %% "akka-persistence-mongo-tools" % "2.1.0",
                              "org.mongodb" %% "casbah" % "3.1.0" )
 ```
 

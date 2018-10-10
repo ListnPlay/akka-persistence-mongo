@@ -1,4 +1,4 @@
-val releaseV = "2.0.8-ffm1"
+val releaseV = "2.1.0-ffm1"
 
 val scalaV = "2.11.8"
 
@@ -33,6 +33,8 @@ def commonDeps(sv:String) = Seq(
   "com.typesafe.akka"         %% "akka-cluster-sharding"    % AkkaV     % "test"
 )
 
+lazy val Travis = config("travis").extend(Test)
+
 val commonSettings = Seq(
   scalaVersion := scalaV,
   libraryDependencies ++= commonDeps(scalaBinaryVersion.value),
@@ -66,12 +68,15 @@ val commonSettings = Seq(
     "Typesafe Snapshots" at "http://repo.typesafe.com/typesafe/snapshots/",
     "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
   ),
-  parallelExecution in Test := false,
-  testOptions in Test += Tests.Argument("-oDS")
-)
+  fork in Test := true,
+  parallelExecution in Test := true,
+  testOptions in Test += Tests.Argument("-oDS"),
+  testOptions in Travis += Tests.Argument("-l", "org.scalatest.tags.Slow")
+) ++ inConfig(Travis)(Defaults.testTasks)
 
 lazy val `akka-persistence-mongo-common` = (project in file("common"))
   .settings(commonSettings:_*)
+  .configs(Travis)
 
 lazy val `akka-persistence-mongo-casbah` = (project in file("casbah"))
   .dependsOn(`akka-persistence-mongo-common` % "test->test;compile->compile")
@@ -82,22 +87,24 @@ lazy val `akka-persistence-mongo-casbah` = (project in file("casbah"))
       "org.mongodb" %  "mongo-java-driver" % "3.6.3" % "test"
     )
   )
+  .configs(Travis)
 
 lazy val `akka-persistence-mongo-rxmongo` = (project in file("rxmongo"))
   .dependsOn(`akka-persistence-mongo-common` % "test->test;compile->compile")
   .settings(commonSettings:_*)
   .settings(
     libraryDependencies ++= Seq(
-      ("org.reactivemongo" %% "reactivemongo" % "0.13.0" % "provided")
+      ("org.reactivemongo" %% "reactivemongo" % "0.16.0" % "provided")
         .exclude("com.typesafe.akka","akka-actor_2.11")
         .exclude("com.typesafe.akka","akka-actor_2.12"),
-      ("org.reactivemongo" %% "reactivemongo-akkastream" % "0.13.0" % "provided")
+      ("org.reactivemongo" %% "reactivemongo-akkastream" % "0.16.0" % "provided")
         .exclude("com.typesafe.akka","akka-actor_2.11")
         .exclude("com.typesafe.akka","akka-actor_2.12")
     ),
     crossScalaVersions := Seq("2.11.8"),
     scalaVersion := "2.11.8"
   )
+  .configs(Travis)
 
 lazy val `akka-persistence-mongo-tools` = (project in file("tools"))
   .dependsOn(`akka-persistence-mongo-casbah` % "test->test;compile->compile")
@@ -107,10 +114,13 @@ lazy val `akka-persistence-mongo-tools` = (project in file("tools"))
       "org.mongodb" %% "casbah" % "3.1.1" % "provided"
     )
   )
+  .configs(Travis)
 
 lazy val `akka-persistence-mongo` = (project in file("."))
   .aggregate(`akka-persistence-mongo-common`, `akka-persistence-mongo-casbah`, `akka-persistence-mongo-rxmongo`, `akka-persistence-mongo-tools`)
   .settings(commonSettings:_*)
   .settings(
     packagedArtifacts in file(".") := Map.empty,
-    publishTo := Some(Resolver.file("file", new File("target/unusedrepo"))))
+    publishTo := Some(Resolver.file("file", new File("target/unusedrepo")))
+  )
+  .configs(Travis)
